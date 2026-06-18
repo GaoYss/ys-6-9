@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { AlertTriangle, CheckCircle2, Eye, EyeOff, PackagePlus } from 'lucide-react'
+import { AlertTriangle, CheckCircle2, Eye, EyeOff, PackagePlus, XCircle } from 'lucide-react'
 import { api } from '../api/client.js'
 import { StatusBadge } from '../components/StatusBadge.jsx'
 
@@ -30,23 +30,43 @@ export function Supply({
 
   const submit = async (event) => {
     event.preventDefault()
-    await api.createPurchaseOrder({
-      supplier_id: form.supplier_id,
-      expected_arrival: form.expected_arrival,
-      remark: form.remark,
-      items: [{
-        ingredient_id: form.ingredient_id,
-        qty: Number(form.qty),
-        unit_price: Number(form.unit_price),
-      }],
-    })
-    setForm((current) => ({ ...current, ingredient_id: '', qty: '', unit_price: '', remark: '' }))
-    refresh()
+    try {
+      await api.createPurchaseOrder({
+        supplier_id: form.supplier_id,
+        expected_arrival: form.expected_arrival,
+        remark: form.remark,
+        items: [{
+          ingredient_id: form.ingredient_id,
+          qty: Number(form.qty),
+          unit_price: Number(form.unit_price),
+        }],
+      })
+      setForm((current) => ({ ...current, ingredient_id: '', qty: '', unit_price: '', remark: '' }))
+      refresh()
+    } catch (error) {
+      alert(`创建采购单失败：${error.message}`)
+    }
   }
 
   const receive = async (order) => {
-    await api.updatePurchaseStatus(order.id, 'received')
-    refresh()
+    try {
+      await api.updatePurchaseStatus(order.id, 'received')
+      refresh()
+    } catch (error) {
+      alert(`入库失败：${error.message}`)
+    }
+  }
+
+  const cancel = async (order) => {
+    if (!confirm(`确认取消采购单 ${order.id} 吗？取消后不可恢复。`)) {
+      return
+    }
+    try {
+      await api.updatePurchaseStatus(order.id, 'cancelled')
+      refresh()
+    } catch (error) {
+      alert(`取消失败：${error.message}`)
+    }
   }
 
   const quickFill = (rec) => {
@@ -180,10 +200,16 @@ export function Supply({
                 <div className="order-side">
                   <b>¥{order.total_amount}</b>
                   <StatusBadge value={order.status} />
-                  {order.status !== 'received' && (
+                  {order.status === 'ordered' && (
                     <button type="button" onClick={() => receive(order)}>
                       <CheckCircle2 size={15} />
                       入库
+                    </button>
+                  )}
+                  {order.status === 'ordered' && (
+                    <button type="button" className="danger" onClick={() => cancel(order)}>
+                      <XCircle size={15} />
+                      取消
                     </button>
                   )}
                 </div>
