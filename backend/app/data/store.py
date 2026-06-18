@@ -81,6 +81,7 @@ ingredients: dict[str, dict] = {
         "unit": "kg",
         "safety_stock": 35,
         "avg_price": 86,
+        "daily_consumption": 8,
     },
     "ing_tripe": {
         "id": "ing_tripe",
@@ -90,6 +91,7 @@ ingredients: dict[str, dict] = {
         "unit": "kg",
         "safety_stock": 22,
         "avg_price": 92,
+        "daily_consumption": 6,
     },
     "ing_mushroom": {
         "id": "ing_mushroom",
@@ -99,6 +101,7 @@ ingredients: dict[str, dict] = {
         "unit": "kg",
         "safety_stock": 25,
         "avg_price": 18,
+        "daily_consumption": 5,
     },
     "ing_packaging": {
         "id": "ing_packaging",
@@ -108,6 +111,7 @@ ingredients: dict[str, dict] = {
         "unit": "套",
         "safety_stock": 400,
         "avg_price": 1.1,
+        "daily_consumption": 120,
     },
 }
 

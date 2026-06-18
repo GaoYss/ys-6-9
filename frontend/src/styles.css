@@ -385,9 +385,32 @@ textarea {
 
 .status-seasonal,
 .status-ordered,
-.status-draft {
+.status-draft,
+.status-warning {
   color: #81520f;
   background: #fff0cf;
+}
+
+.status-critical {
+  color: #9a3427;
+  background: #f9e6e1;
+}
+
+.status-normal {
+  color: #1c6b47;
+  background: #e2f4e8;
+}
+
+.recommend-row {
+  background: #fff;
+}
+
+.recommend-row.critical {
+  background: #fdecea;
+}
+
+.recommend-row.warning {
+  background: #fff7ed;
 }
 
 .card-grid {

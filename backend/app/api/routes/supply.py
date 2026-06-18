@@ -1,6 +1,13 @@
 from fastapi import APIRouter, status
 
-from app.schemas.supply import Ingredient, PurchaseOrder, PurchaseOrderCreate, PurchaseStatusUpdate, Supplier
+from app.schemas.supply import (
+    Ingredient,
+    PurchaseOrder,
+    PurchaseOrderCreate,
+    PurchaseStatusUpdate,
+    ReplenishmentRecommendation,
+    Supplier,
+)
 from app.services import supply_service
 
 router = APIRouter(tags=["supply"])
@@ -19,6 +26,11 @@ def get_suppliers() -> list[dict]:
 @router.get("/purchase-orders", response_model=list[PurchaseOrder])
 def get_purchase_orders() -> list[dict]:
     return supply_service.list_purchase_orders()
+
+
+@router.get("/replenishment-recommendations", response_model=list[ReplenishmentRecommendation])
+def get_replenishment_recommendations() -> list[dict]:
+    return supply_service.get_replenishment_recommendations()
 
 
 @router.post("/purchase-orders", response_model=PurchaseOrder, status_code=status.HTTP_201_CREATED)

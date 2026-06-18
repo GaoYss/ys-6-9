@@ -11,6 +11,7 @@ class Ingredient(BaseModel):
     unit: str
     safety_stock: float
     avg_price: float
+    daily_consumption: float
 
 
 class Supplier(BaseModel):
@@ -41,4 +42,19 @@ class PurchaseOrder(PurchaseOrderCreate):
 
 class PurchaseStatusUpdate(BaseModel):
     status: str = Field(pattern="^(draft|ordered|received|cancelled)$")
+
+
+class ReplenishmentRecommendation(BaseModel):
+    ingredient_id: str
+    ingredient_name: str
+    category: str
+    unit: str
+    stock_qty: float
+    safety_stock: float
+    daily_consumption: float
+    in_transit_qty: float
+    coverage_days: float
+    recommend_qty: float
+    warning_level: str
+    estimated_cost: float
 

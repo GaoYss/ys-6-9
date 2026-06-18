@@ -33,6 +33,7 @@ export const api = {
   ingredients: () => request('/ingredients'),
   suppliers: () => request('/suppliers'),
   purchaseOrders: () => request('/purchase-orders'),
+  replenishmentRecommendations: () => request('/replenishment-recommendations'),
   createPurchaseOrder: (payload) => request('/purchase-orders', { method: 'POST', body: JSON.stringify(payload) }),
   updatePurchaseStatus: (id, status) => request(`/purchase-orders/${id}/status`, {
     method: 'PATCH',

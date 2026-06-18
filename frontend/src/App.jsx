@@ -27,6 +27,7 @@ export default function App() {
     ingredients: [],
     suppliers: [],
     purchaseOrders: [],
+    replenishmentRecommendations: [],
     profitReport: [],
   })
 
@@ -40,6 +41,7 @@ export default function App() {
         ingredients,
         suppliers,
         purchaseOrders,
+        replenishmentRecommendations,
         profitReport,
       ] = await Promise.all([
         api.summary(),
@@ -48,6 +50,7 @@ export default function App() {
         api.ingredients(),
         api.suppliers(),
         api.purchaseOrders(),
+        api.replenishmentRecommendations(),
         api.profitReport(),
       ])
       setState({
@@ -59,6 +62,7 @@ export default function App() {
         ingredients,
         suppliers,
         purchaseOrders,
+        replenishmentRecommendations,
         profitReport,
       })
     } catch (error) {

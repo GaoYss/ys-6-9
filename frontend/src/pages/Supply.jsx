@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react'
-import { CheckCircle2, PackagePlus } from 'lucide-react'
+import { AlertTriangle, CheckCircle2, PackagePlus } from 'lucide-react'
 import { api } from '../api/client.js'
 import { StatusBadge } from '../components/StatusBadge.jsx'
 
-export function Supply({ ingredients, suppliers, purchaseOrders, refresh }) {
+export function Supply({ ingredients, suppliers, purchaseOrders, replenishmentRecommendations, refresh }) {
   const [form, setForm] = useState({
     supplier_id: '',
     ingredient_id: '',
@@ -41,8 +41,73 @@ export function Supply({ ingredients, suppliers, purchaseOrders, refresh }) {
     refresh()
   }
 
+  const quickFill = (rec) => {
+    setForm((current) => ({
+      ...current,
+      ingredient_id: rec.ingredient_id,
+      qty: String(rec.recommend_qty),
+      unit_price: String(ingredients.find((i) => i.id === rec.ingredient_id)?.avg_price || ''),
+    }))
+  }
+
   return (
     <div className="page-grid">
+      <section className="panel">
+        <div className="section-title">
+          <h2>
+            <AlertTriangle size={18} />
+            补货推荐
+          </h2>
+          <span>{replenishmentRecommendations.filter((r) => r.warning_level !== 'normal').length} 项需关注</span>
+        </div>
+        <div className="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>原料</th>
+                <th>分类</th>
+                <th>当前库存</th>
+                <th>在途数量</th>
+                <th>日均消耗</th>
+                <th>可覆盖天数</th>
+                <th>安全库存</th>
+                <th>推荐数量</th>
+                <th>预估金额</th>
+                <th>预警等级</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              {replenishmentRecommendations.map((rec) => (
+                <tr key={rec.ingredient_id} className={`recommend-row ${rec.warning_level}`}>
+                  <td><strong>{rec.ingredient_name}</strong></td>
+                  <td>{rec.category}</td>
+                  <td>{rec.stock_qty}{rec.unit}</td>
+                  <td>{rec.in_transit_qty}{rec.unit}</td>
+                  <td>{rec.daily_consumption}{rec.unit}</td>
+                  <td>{rec.coverage_days}天</td>
+                  <td>{rec.safety_stock}{rec.unit}</td>
+                  <td>
+                    <b>{rec.recommend_qty > 0 ? rec.recommend_qty : '—'}</b>
+                    {rec.recommend_qty > 0 && <small>{rec.unit}</small>}
+                  </td>
+                  <td>{rec.recommend_qty > 0 ? `¥${rec.estimated_cost}` : '—'}</td>
+                  <td><StatusBadge value={rec.warning_level} /></td>
+                  <td>
+                    {rec.recommend_qty > 0 && (
+                      <button type="button" onClick={() => quickFill(rec)}>
+                        <PackagePlus size={14} />
+                        填入
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
       <section className="panel">
         <div className="section-title">
           <h2>原料库存</h2>
@@ -56,6 +121,7 @@ export function Supply({ ingredients, suppliers, purchaseOrders, refresh }) {
                 <th>分类</th>
                 <th>库存</th>
                 <th>安全库存</th>
+                <th>日均消耗</th>
                 <th>均价</th>
               </tr>
             </thead>
@@ -66,6 +132,7 @@ export function Supply({ ingredients, suppliers, purchaseOrders, refresh }) {
                   <td>{item.category}</td>
                   <td>{item.stock_qty}{item.unit}</td>
                   <td>{item.safety_stock}{item.unit}</td>
+                  <td>{item.daily_consumption}{item.unit}</td>
                   <td>¥{item.avg_price}</td>
                 </tr>
               ))}
