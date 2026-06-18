@@ -5,6 +5,13 @@ from app.schemas.supply import PurchaseOrderCreate
 
 REPLENISH_DAYS = 7
 TRANSIT_STATUSES = {"draft", "ordered"}
+TERMINAL_STATUSES = {"received", "cancelled"}
+STATUS_TRANSITIONS: dict[str, set[str]] = {
+    "draft": {"ordered", "cancelled"},
+    "ordered": {"received", "cancelled"},
+    "received": set(),
+    "cancelled": set(),
+}
 
 
 def list_ingredients() -> list[dict]:
@@ -45,12 +52,33 @@ def update_purchase_status(order_id: str, status_value: str) -> dict:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Purchase order not found")
 
     previous_status = order["status"]
+    if previous_status == status_value:
+        return order
+
+    if previous_status in TERMINAL_STATUSES:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"采购单已{previous_status}，无法修改状态",
+        )
+    if status_value not in STATUS_TRANSITIONS.get(previous_status, set()):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"不允许从 {previous_status} 变更为 {status_value}",
+        )
+
     order["status"] = status_value
-    if status_value == "received" and previous_status != "received":
+    if status_value == "received":
         for item in order["items"]:
             ingredient = store.ingredients[item["ingredient_id"]]
-            ingredient["stock_qty"] = round(ingredient["stock_qty"] + item["qty"], 2)
-            ingredient["avg_price"] = round(item["unit_price"], 2)
+            old_qty = ingredient["stock_qty"]
+            old_value = old_qty * ingredient["avg_price"]
+            added_value = item["qty"] * item["unit_price"]
+            new_qty = round(old_qty + item["qty"], 2)
+            if new_qty > 0:
+                ingredient["avg_price"] = round((old_value + added_value) / new_qty, 2)
+            else:
+                ingredient["avg_price"] = round(item["unit_price"], 2)
+            ingredient["stock_qty"] = new_qty
     return order
 
 
@@ -64,7 +92,7 @@ def _calc_in_transit() -> dict[str, float]:
     return in_transit
 
 
-def get_replenishment_recommendations() -> list[dict]:
+def get_replenishment_recommendations(show_all: bool = False) -> list[dict]:
     in_transit = _calc_in_transit()
     results = []
 
@@ -107,5 +135,7 @@ def get_replenishment_recommendations() -> list[dict]:
         })
 
     results.sort(key=lambda r: ({"critical": 0, "warning": 1, "normal": 2}[r["warning_level"]], -r["recommend_qty"]))
+    if not show_all:
+        results = [r for r in results if r["warning_level"] != "normal"]
     return results
 

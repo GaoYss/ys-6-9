@@ -18,6 +18,7 @@ const modules = [
 
 export default function App() {
   const [activeModule, setActiveModule] = useState('dashboard')
+  const [showAllReplenishment, setShowAllReplenishment] = useState(false)
   const [state, setState] = useState({
     loading: true,
     error: '',
@@ -30,6 +31,11 @@ export default function App() {
     replenishmentRecommendations: [],
     profitReport: [],
   })
+
+  const loadReplenishment = async (showAll) => {
+    const list = await api.replenishmentRecommendations(showAll)
+    setState((current) => ({ ...current, replenishmentRecommendations: list }))
+  }
 
   const refresh = async () => {
     setState((current) => ({ ...current, loading: true, error: '' }))
@@ -50,7 +56,7 @@ export default function App() {
         api.ingredients(),
         api.suppliers(),
         api.purchaseOrders(),
-        api.replenishmentRecommendations(),
+        api.replenishmentRecommendations(showAllReplenishment),
         api.profitReport(),
       ])
       setState({
@@ -68,6 +74,11 @@ export default function App() {
     } catch (error) {
       setState((current) => ({ ...current, loading: false, error: error.message }))
     }
+  }
+
+  const toggleShowAllReplenishment = async (value) => {
+    setShowAllReplenishment(value)
+    await loadReplenishment(value)
   }
 
   useEffect(() => {
@@ -98,7 +109,13 @@ export default function App() {
       {activeModule === 'dashboard' && <Dashboard {...commonProps} />}
       {activeModule === 'catalog' && <Catalog {...commonProps} />}
       {activeModule === 'specs' && <Specifications {...commonProps} />}
-      {activeModule === 'supply' && <Supply {...commonProps} />}
+      {activeModule === 'supply' && (
+        <Supply
+          {...commonProps}
+          showAllReplenishment={showAllReplenishment}
+          onToggleShowAllReplenishment={toggleShowAllReplenishment}
+        />
+      )}
       {activeModule === 'finance' && <Finance {...commonProps} />}
     </AppShell>
   )

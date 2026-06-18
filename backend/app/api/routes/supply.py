@@ -29,8 +29,8 @@ def get_purchase_orders() -> list[dict]:
 
 
 @router.get("/replenishment-recommendations", response_model=list[ReplenishmentRecommendation])
-def get_replenishment_recommendations() -> list[dict]:
-    return supply_service.get_replenishment_recommendations()
+def get_replenishment_recommendations(show_all: bool = False) -> list[dict]:
+    return supply_service.get_replenishment_recommendations(show_all=show_all)
 
 
 @router.post("/purchase-orders", response_model=PurchaseOrder, status_code=status.HTTP_201_CREATED)

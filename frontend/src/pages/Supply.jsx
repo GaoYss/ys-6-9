@@ -1,9 +1,17 @@
 import { useMemo, useState } from 'react'
-import { AlertTriangle, CheckCircle2, PackagePlus } from 'lucide-react'
+import { AlertTriangle, CheckCircle2, Eye, EyeOff, PackagePlus } from 'lucide-react'
 import { api } from '../api/client.js'
 import { StatusBadge } from '../components/StatusBadge.jsx'
 
-export function Supply({ ingredients, suppliers, purchaseOrders, replenishmentRecommendations, refresh }) {
+export function Supply({
+  ingredients,
+  suppliers,
+  purchaseOrders,
+  replenishmentRecommendations,
+  refresh,
+  showAllReplenishment,
+  onToggleShowAllReplenishment,
+}) {
   const [form, setForm] = useState({
     supplier_id: '',
     ingredient_id: '',
@@ -58,7 +66,21 @@ export function Supply({ ingredients, suppliers, purchaseOrders, replenishmentRe
             <AlertTriangle size={18} />
             补货推荐
           </h2>
-          <span>{replenishmentRecommendations.filter((r) => r.warning_level !== 'normal').length} 项需关注</span>
+          <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+            <span>
+              {showAllReplenishment
+                ? `共 ${replenishmentRecommendations.length} 项`
+                : `${replenishmentRecommendations.length} 项需关注`}
+            </span>
+            <button
+              type="button"
+              onClick={() => onToggleShowAllReplenishment(!showAllReplenishment)}
+              className="icon-only"
+              title={showAllReplenishment ? '只看需关注' : '显示全部'}
+            >
+              {showAllReplenishment ? <EyeOff size={15} /> : <Eye size={15} />}
+            </button>
+          </div>
         </div>
         <div className="table-wrap">
           <table>
